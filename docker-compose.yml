@@ -1,0 +1,38 @@
+version: '3'
+services:
+  gpsd:
+    ports:
+      - 2947:2947
+    devices:
+            - "/dev/ttyACM0:/dev/ttyACM0"
+    image: x2qnet/docker-rpi-gpsd
+    command: "-D1 -n -N /dev/ttyACM0"
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  hcxdumptool:
+    image: x2qnet/docker-rpi-hcxdumptool
+    privileged: true
+    depends_on:
+      - gpsd
+    restart: always
+    network_mode: "host"
+    volumes:
+      - sniffing-data:/sniffing-data
+    command: "/app/hcxdumptool -i wlx00c0ca97abf3 --use_gpsd --enable_status=31 -t 3 -o /sniffing-data/dump.pcapng"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+
+ 
+volumes:
+  sniffing-data:
+
+
